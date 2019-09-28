@@ -2,7 +2,15 @@ package com.qa.pages;
 
 import static org.testng.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -12,9 +20,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.qa.base.TestBase;
+import com.qa.util.TestUtil;
 
 public class LoginPageTest extends TestBase{
 		/*public LoginPageTest(){
@@ -22,6 +32,7 @@ public class LoginPageTest extends TestBase{
 		}*/
 		
 	boolean result;
+	boolean Logout;
 	
 	@BeforeMethod
 	public void setUp(){
@@ -31,9 +42,12 @@ public class LoginPageTest extends TestBase{
 	
 	@Test(priority=1)
 	public void AddingNewMovie() throws InterruptedException{
+		
+		
+		driver.findElement(By.xpath("//button[@class='btn btn-secondary']")).click();
 		driver.findElement(By.xpath("//a[contains(text(),'Login')]")).click();
-		driver.findElement(By.name("password")).sendKeys(prop.getProperty("username"));
-		driver.findElement(By.name("username")).sendKeys(prop.getProperty("password"));
+		driver.findElement(By.name("password")).sendKeys(prop.getProperty("password"));
+		driver.findElement(By.name("username")).sendKeys(prop.getProperty("username"));
 		driver.findElement(By.xpath("//button[contains(text(),'Login')]")).click();
 		
 		//Click on Add Movie button
@@ -59,7 +73,7 @@ public class LoginPageTest extends TestBase{
 		driver.findElement(By.xpath("//div[@class='row form-group']//*[5]")).click();
 		driver.findElement(By.xpath("//button[contains(text(),'Save Movie')]")).click();
 		
-		driver.findElement(By.xpath("//a[contains(text(),'Profile')]")).click();
+		driver.findElement(By.xpath("//a[contains(text(),'Movies')]")).click();
 		driver.findElement(By.name("search")).sendKeys(prop.getProperty("title"));
 		
 		
@@ -74,19 +88,46 @@ public class LoginPageTest extends TestBase{
 			
 		}
 		else {
-			Assert.assertTrue(true, "Movie Name is Display");
+			Assert.assertEquals(result, true, "Movie Name is Display");
 		}
 		
 	}
+	@DataProvider
+	public Iterator<Object[]> getTestdata(){
+		
+		ArrayList<Object[]> testData = TestUtil.getDatafromExcel();
+		return testData.iterator();
+		
+	}
 	
-	@Test(priority=1)
-	public void LoginTestDriven() throws InterruptedException{
+	
+	@Test(dataProvider = "getTestdata")
+	public void LoginTestDriven(String Username, String Password) throws InterruptedException {
+		
+		driver.findElement(By.xpath("//button[@class='btn btn-secondary']")).click();
+		driver.findElement(By.xpath("//a[contains(text(),'Login')]")).click();
+		driver.findElement(By.name("password")).sendKeys(Password);
+		driver.findElement(By.name("username")).sendKeys(Username);
+		driver.findElement(By.xpath("//button[contains(text(),'Login')]")).click();
+		
+		Thread.sleep(2000);
+		try {
+			Logout = driver.findElement(By.xpath("//a[contains(text(),'Logout')]")).isDisplayed();
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		Assert.assertEquals(Logout, true, "unable to login");
 		
 	}
 	
 
 	@AfterMethod
-	public void tearDown(){
+	public void tearDown() throws IOException{
+		File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+		String currentDir = System.getProperty("user.dir");
+		FileUtils.copyFile(scrFile, new File(currentDir + "/screenshots/" + System.currentTimeMillis() + ".jpg"));
 		driver.quit();
 	}
 }

@@ -19,8 +19,8 @@ import com.qa.base.TestBase;
 
 public class TestUtil extends TestBase {
 
-	public static long PAGE_LOAD_TIMEOUT = 20;
-	public static long IMPLICIT_WAIT = 20;
+	public static long PAGE_LOAD_TIMEOUT = 60;
+	public static long IMPLICIT_WAIT = 10;
 
 	public static String TESTDATA_SHEET_PATH = "/Users/naveenkhunteta/Documents/workspace"
 			+ "/FreeCRMTest/src/main/java/com/crm/qa/testdata/FreeCrmTestData.xlsx";
@@ -35,9 +35,27 @@ public class TestUtil extends TestBase {
 	}
 	
 	public static ArrayList<Object[]> getDatafromExcel(){
+		ArrayList<Object[]> myData = new ArrayList<Object[]>();
+		
 		try {
-			reader= new Xls_Reader()
+			reader= new Xls_Reader("C:\\Users\\rockygupta\\eclipse-workspace\\"
+					+ "testMaven\\src\\main\\java\\com\\qa\\testdata\\Logindata.xlsx");
 		}
+		catch(Exception e) {
+			
+		}
+		
+		
+		for(int rowNum=2; rowNum<=reader.getRowCount("LoginData"); rowNum++) {
+			String Username = reader.getCellData("LoginData", "Username", rowNum);
+			String Password = reader.getCellData("LoginData", "Password", rowNum);
+			
+			Object ob[]= {Username ,Password};
+			myData.add(ob);
+		}
+		
+		
+		return myData;
 	}
 	
 
